@@ -66,6 +66,8 @@ The view will contain:
 * A quit button that exits the game
 * A pause button that pauses the game
 * A box containing the top scores for the game
+
+
 ![The Board Setup](https://sphotos-a.xx.fbcdn.net/hphotos-prn1/64461_10200105554173863_739153238_n.jpg "The Board Setup")
 
 ###Classes
