@@ -1,12 +1,12 @@
 # Game - Programming Assignments Private Repository
 ### Student Information
-  + Name: Tommy Trojan
-  + USC Email: ttrojan@usc.edu
-  + USC ID: 0123456789
+  + Name: Joseph Boman
+  + USC Email: jboman@usc.edu
+  + USC ID: 4267029406
 
 ### Game Information
-  + Game Name: myAwsomeGame
-  + Game Description: One sentence game description
+  + Game Name: Uncharted Territory
+  + Game Description: A shooter game, where the player attempts to dodge or destroy asteroids and alien spacecraft to find and destroy the enemy mothership.
   + [Game Design Doc](GameDesignDoc.md)
 
 
