@@ -2,7 +2,7 @@
 #define PLAYER_H
 
 #include <QKeyEvent>
-#include <object.h>
+#include "object.h"
 #include <iostream>
 
 class Player: public Object
@@ -14,7 +14,8 @@ class Player: public Object
   void onHit();
   void move();
   void setXVel(int xVelo);
-  void setXandY(int xVal, int yVal);
+  int getX(){return x;}
+  int getY(){return y;}
 };
 
 #endif

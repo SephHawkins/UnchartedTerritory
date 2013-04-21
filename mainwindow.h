@@ -26,6 +26,8 @@
 #include <cmath>
 #include "player.h"
 #include "gamescene.h"
+#include "basicalien.h"
+#include "bullet.h"
 
 /** The MainWindow class. Contains all of the Widgets, Items,
  * Layouts and Objects required to create the program.
@@ -65,8 +67,13 @@ private:
     QTextEdit *instructions;
     //The Edit Box
     QLineEdit *nameField;
+    //Objects
     Player *player;
+    BasicAlien *testAlien;
+    Bullet *testBullet;
     //The PixMaps for various things
+    QPixmap *bulletImage;
+    QPixmap *basicAlienImage;
     QPixmap *playerImage;
     
     //Various members used to hold data in between functions

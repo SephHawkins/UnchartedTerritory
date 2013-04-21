@@ -11,6 +11,7 @@ MainWindow::MainWindow()  {
     timer->setInterval(5);
     connect(timer, SIGNAL(timeout()), this, SLOT(handleTimer()));
 
+    testBullet = NULL;
     //The Scene and the view
     game = new GameScene(this);
     game->setSceneRect(0,0, 600, 800);
@@ -96,7 +97,11 @@ void MainWindow::beginGame()
     return;
   }
   playerImage = new QPixmap("player.png");
+  basicAlienImage = new QPixmap("BasicAlien.png");
+  bulletImage = new QPixmap("Bullet.png");
   player = new Player(playerImage, 275, 615, 0, 0);
+  testAlien = new BasicAlien(basicAlienImage, 80, 300, 1, 0);
+  game->addItem(testAlien);
   game->addItem(player);
   timer->start();
   gameView->setFocus();
@@ -158,7 +163,6 @@ void MainWindow::beginGame()
 
 void MainWindow::keyReleaseEvent(QKeyEvent *e)
 {
-  std::cout<<"Are we Here?"<<std::endl;
   QWidget::keyPressEvent(e);
   switch(e->key())
   {
@@ -175,7 +179,6 @@ void MainWindow::keyReleaseEvent(QKeyEvent *e)
 
 void MainWindow::keyPressEvent(QKeyEvent *e)
 {
-  std::cout<<"Are we Here?"<<std::endl;
   QWidget::keyPressEvent(e);
   switch(e->key())
   {
@@ -188,7 +191,13 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
     {
       player->setXVel(1);
       break;
-    }   
+    }
+    case Qt::Key_Control:
+    {
+      testBullet = new Bullet(bulletImage, player->getX()+24, player->getY(), 0, -2);
+      game->addItem(testBullet);
+      break;
+    }
     case Qt::Key_P:
     {
       if(timer->isActive())
@@ -202,6 +211,9 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
 void MainWindow::handleTimer()
 {
   player->move();
+  if(testBullet != NULL)
+    testBullet->move();
+  testAlien->move();
 }
 
 void MainWindow::pauseGame()
