@@ -96,9 +96,9 @@ void MainWindow::beginGame()
     nameField->setFocus();
     return;
   }
-  playerImage = new QPixmap("player.png");
-  basicAlienImage = new QPixmap("BasicAlien.png");
-  bulletImage = new QPixmap("Bullet.png");
+  playerImage = new QPixmap("images/player.png");
+  basicAlienImage = new QPixmap("images/BasicAlien.png");
+  bulletImage = new QPixmap("images/Bullet.png");
   player = new Player(playerImage, 275, 615, 0, 0);
   testAlien = new BasicAlien(basicAlienImage, 80, 300, 1, 0);
   game->addItem(testAlien);
