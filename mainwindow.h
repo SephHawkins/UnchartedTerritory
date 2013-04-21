@@ -8,6 +8,7 @@
 #include <QTextEdit>
 #include <QRadioButton>
 #include <QListView>
+#include <QKeyEvent>
 #include <QLineEdit>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -18,11 +19,13 @@
 #include <QString>
 #include <QStandardItemModel>
 #include <QStandardItem>
+#include <QPixmap>
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <cmath>
-
+#include "player.h"
+#include "gamescene.h"
 
 /** The MainWindow class. Contains all of the Widgets, Items,
  * Layouts and Objects required to create the program.
@@ -41,9 +44,10 @@ public:
     
 private:
     //The scene and views
-    QGraphicsScene *scene;
-    QGraphicsView *view;
+    GameScene *game;
     QGraphicsView *gameView;
+    QGraphicsView *view;
+    //QGraphicsView *gameView;
     //The buttons
     QPushButton *startGame;
     QPushButton *quit;
@@ -61,6 +65,9 @@ private:
     QTextEdit *instructions;
     //The Edit Box
     QLineEdit *nameField;
+    Player *player;
+    //The PixMaps for various things
+    QPixmap *playerImage;
     
     //Various members used to hold data in between functions
     std::string playerName;
@@ -68,6 +75,10 @@ private:
     
     //Fills in the high scores from the high score file
     void getHighScores();
+    
+public:
+    void keyPressEvent(QKeyEvent *e);
+    void keyReleaseEvent(QKeyEvent *e);
     
 public slots:
     //The slots that react to various in-game events

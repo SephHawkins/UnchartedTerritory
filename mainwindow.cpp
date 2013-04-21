@@ -9,14 +9,18 @@ MainWindow::MainWindow()  {
     //The Timer
     timer = new QTimer(this);
     timer->setInterval(5);
-    //connect(timer, SIGNAL(timeout()), this, SLOT(handleTimer()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(handleTimer()));
 
     //The Scene and the view
-    scene = new QGraphicsScene();
-    gameView = new QGraphicsView(scene);
+    game = new GameScene(this);
+    game->setSceneRect(0,0, 600, 800);
+    gameView = new QGraphicsView(game);
+    gameView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    gameView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    //gameView = new QGraphicsView(scene);
     view = new QGraphicsView();
     view->setFixedSize(600, 600);
-    view->setWindowTitle("Tile Puzzle");
+    view->setWindowTitle("Game");
     
     //The Individual Layouts
     buttons = new QVBoxLayout();
@@ -39,11 +43,11 @@ MainWindow::MainWindow()  {
     instructions->setReadOnly(1);
     
     //The start and quit Buttons
-    quit = new QPushButton("&Quit");
+    quit = new QPushButton("&Quit", this);
     connect(quit, SIGNAL(clicked()), qApp, SLOT(quit()));
-    startGame = new QPushButton("&Start");
+    startGame = new QPushButton("&Start", this);
     connect(startGame, SIGNAL(clicked()), this, SLOT(beginGame()));
-    pause = new QPushButton("&Pause");
+    pause = new QPushButton("&Pause", this);
     connect(pause, SIGNAL(clicked()), this, SLOT(pauseGame()));
     buttons->addWidget(startGame);
     buttons->addWidget(pause);
@@ -91,6 +95,11 @@ void MainWindow::beginGame()
     nameField->setFocus();
     return;
   }
+  playerImage = new QPixmap("player.png");
+  player = new Player(playerImage, 275, 615, 0, 0);
+  game->addItem(player);
+  timer->start();
+  gameView->setFocus();
   /*//Creates the board
   int *values;
   int dim = static_cast<int>(sqrt(iSize));
@@ -147,9 +156,52 @@ void MainWindow::beginGame()
 }*/
 }
 
+void MainWindow::keyReleaseEvent(QKeyEvent *e)
+{
+  std::cout<<"Are we Here?"<<std::endl;
+  QWidget::keyPressEvent(e);
+  switch(e->key())
+  {
+    case Qt::Key_A:
+    {
+      player->setXVel(0);
+    }
+    case Qt::Key_D:
+    {
+      player->setXVel(0);
+    }
+  }
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *e)
+{
+  std::cout<<"Are we Here?"<<std::endl;
+  QWidget::keyPressEvent(e);
+  switch(e->key())
+  {
+    case Qt::Key_A:
+    {
+      player->setXVel(-1);
+      break;
+    }
+    case Qt::Key_D:
+    {
+      player->setXVel(1);
+      break;
+    }   
+    case Qt::Key_P:
+    {
+      if(timer->isActive())
+        timer->stop();
+      else
+        timer->start();
+    }
+  }
+}
+
 void MainWindow::handleTimer()
 {
-
+  player->move();
 }
 
 void MainWindow::pauseGame()
