@@ -8,6 +8,7 @@ MainWindow::MainWindow()  {
     boss = 0;
     gameInProgress = 0;
     count = 0;
+    score_ = 0;
     
     gameOver = NULL;
     
@@ -113,7 +114,11 @@ void MainWindow::beginGame()
   {
     game->removeItem(gameOver);
     delete gameOver;
-    
+    game->removeItem(score);
+    delete score;
+    game->removeItem(scoreValue);
+    delete scoreValue;
+    score_ = 0;    
   }
   gameInProgress = 1;
   QString temp = nameField->text();
@@ -126,6 +131,18 @@ void MainWindow::beginGame()
   player = new Player(playerImage, 275, 615, 0, 0);
   eBulletsandPlayer.push_back(player);
   game->addItem(player);
+  QBrush brush(Qt::white);
+  QFont serifFont("Times", 20);
+  score = new QGraphicsSimpleTextItem("Score:");
+  score->setPos(120, 110);
+  score->setBrush(brush);
+  score->setFont(serifFont);
+  game->addItem(score);
+  scoreValue = new QGraphicsSimpleTextItem("0");
+  scoreValue->setPos(190, 110);
+  scoreValue->setBrush(brush);
+  scoreValue->setFont(serifFont);
+  game->addItem(scoreValue);
   timer->start();
   gameView->setFocus();
 }
@@ -167,7 +184,7 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
     }
     case Qt::Key_Control:
     {
-      if(pBullets.size() < 5)
+      if(pBullets.size() < 3)
       {
         Bullet *bullet = new Bullet(bulletImage, player->getX()+24, player->getY(), 0, -3); 
         game->addItem(bullet);
@@ -206,42 +223,9 @@ void MainWindow::handleTimer()
   {
     count++;
   }
-  //Checking for collision between player and enemies
-  std::vector<Object*>::iterator pit = eBulletsandPlayer.begin();
-  checkCollision(pit, ok);
-  if(ok)
-  {
-    playerHit();
-    return;
-  }
-  //Checking for collision between player's bullets and the enemies
-  for(std::vector<Object*>::iterator it = pBullets.begin(); it < pBullets.end(); ++it)
-  {
-    std::vector<Object*>::iterator hit = checkCollision(it, ok);
-    if(ok)
-    {
-      game->removeItem(*it);
-      game->removeItem(*hit);
-      delete (*it);
-      delete (*hit);
-      pBullets.erase(it);
-      eBulletsandPlayer.erase(hit);    
-    }
-  }
   
   //Moving the player
   player->move();
-  
-  //Moving the player's bullets
-  for(std::vector<Object*>::iterator it = pBullets.begin(); it < pBullets.end(); ++it)
-  {
-    (*it)->move();
-    if((*it)->getY() < 0)
-    {
-      delete (*it);
-      pBullets.erase(it);      
-    }
-  }
   
   //Creating asteroids and Large Asteroids.
   if(count % 150 == 0)
@@ -290,65 +274,152 @@ void MainWindow::handleTimer()
     game->addItem(diveAlien);
     eBulletsandPlayer.push_back(diveAlien);
   }
-
+  
   //Moving the objects, other than the player
-  for(std::vector<Object*>::iterator it = eBulletsandPlayer.begin()+1; it < eBulletsandPlayer.end(); ++it)
-  {
-    //If it's off the screen
-    if((*it)->getY() < -60 || (*it)->getX() > 440 || (*it)->getX() < 100 || (*it)->getY() > 700)
+    for(std::vector<Object*>::iterator it = eBulletsandPlayer.begin()+1; it != eBulletsandPlayer.end(); ++it)
     {
-      game->removeItem(*it);
-      delete (*it);
-      eBulletsandPlayer.erase(it);
-      continue;
-    }
-    //If it's a Dive Alien
-    if((*it)->type == "DiveAlien")
-    {
-      if((*it)->getY() > 300)
+      //std::cout<<"Inner loop began"<<(*it)<<std::endl;
+      //std::cout<<"Type: "<<(*it)->type<<std::endl;
+      //If it's off the screen
+      if((*it)->getY() < -60 || (*it)->getX() > 460 || (*it)->getX() < 0 || (*it)->getY() > 700)
       {
-        DiveAlien *temp = (DiveAlien*) (*it);
-        temp->zoomOff();
-        Missile *missile = new Missile(missileImage, (*it)->getX()+16, (*it)->getY()+48, 0, 1);
-        game->addItem(missile);
-        eBulletsandPlayer.push_back(missile);
+        delete (*it);
+        (*it) = NULL;
+        continue;
       }
-    }
-    
-    //If it's a Basic Alien
-    if((*it)->type == "BasicAlien")
-    {
-      if((*it)->getX() == 200 || (*it)->getX() == 350)
+      //If it's a Dive Alien
+      if((*it)->type == "DiveAlien")
       {
-        Bullet *bullet = new Bullet(bulletImage, (*it)->getX()+24, (*it)->getY()+64, 0, 2);
-        game->addItem(bullet);
-        eBulletsandPlayer.push_back(bullet);
-      }
-    }
-    
-    //If it's a missile
-    if((*it)->type == "Missile")
-    {
-      if((*it)->getY() > 580)
-      {
-        Missile *temp = (Missile*) (*it);
-        temp->explode();
-        temp->setPixmap(*explodeImage);
-        if(temp->time == 0)
+        if((*it)->getY() > 300)
         {
-          game->removeItem(temp);
-          delete (*it);
-          eBulletsandPlayer.erase(it);
+          DiveAlien *temp = (DiveAlien*) (*it);
+          temp->zoomOff();
+          Missile *missile = new Missile(missileImage, (*it)->getX()+16, (*it)->getY()+48, 0, 1);
+          game->addItem(missile);
+          eBulletsandPlayer.push_back(missile);
+        }
+      }
+    
+      //If it's a Basic Alien
+      if((*it)->type == "BasicAlien")
+      {
+        if((*it)->getX() == 200 || (*it)->getX() == 350)
+        {
+          Bullet *bullet = new Bullet(bulletImage, (*it)->getX()+24, (*it)->getY()+64, 0, 2);
+          game->addItem(bullet);
+          eBulletsandPlayer.push_back(bullet);
+        }
+      }
+    
+      //If it's a missile
+      if((*it)->type == "Missile")
+      {
+        if((*it)->getY() > 580)
+        {
+          Missile *temp = (Missile*) (*it);
+          temp->explode();
+          temp->setPixmap(*explodeImage);
+          if(temp->time == 0)
+          {
+            delete (*it);
+            (*it) = NULL;
+            continue;
+          }
         }
       }
     }
+  for(unsigned int i = 0; i < eBulletsandPlayer.size(); i++)
+  {
+    if(eBulletsandPlayer[i] == NULL)
+    {
+      eBulletsandPlayer[i] = eBulletsandPlayer[eBulletsandPlayer.size()-1];
+      eBulletsandPlayer.pop_back();
+    }
+  }
+  for(std::vector<Object*>::iterator it = eBulletsandPlayer.begin()+1; it != eBulletsandPlayer.end(); ++it)
+  {
     (*it)->move();
+  }
+  
+  //Moving the player's bullets
+  for(std::vector<Object*>::iterator it = pBullets.begin(); it < pBullets.end(); ++it)
+  {
+    (*it)->move();
+    if((*it)->getY() < 120)
+    {
+      delete (*it);
+      (*it) = NULL;
+    }
+  }
+  for(unsigned int i = 0; i < pBullets.size(); i++)
+  {
+    if(pBullets[i] == NULL)
+    {
+      pBullets[i] = pBullets[pBullets.size()-1];
+      pBullets.pop_back();
+    }
+  }
+  //Checking for collision between player and enemies
+  std::vector<Object*>::iterator pit = eBulletsandPlayer.begin();
+  checkCollision(pit, ok);
+  if(ok)
+  {
+    playerHit();
+    return;
+  }
+  
+  //Checking for collision between player's bullets and the enemies
+  for(std::vector<Object*>::iterator it = pBullets.begin(); it < pBullets.end(); ++it)
+  {
+    std::vector<Object*>::iterator hit = checkCollision(it, ok);
+    if(ok)
+    {
+      if((*hit)->type == "Missile" || (*hit)->type == "Bullet" || (*hit)->type == "Asteroid")
+      {
+        score_ += 1;
+      }
+      else if((*hit)->type == "LAsteroid")
+      {
+        score_ += 2;
+      }
+      else if((*hit)->type == "BasicAlien" || (*hit)->type == "DiveAlien")
+      {
+        score_ += 3;
+      }
+      QString temp = QString::number(score_);
+      scoreValue->setText(temp);
+      if((*hit)->type == "LAsteroid")
+      {
+        Asteroid *asteroid = new Asteroid(asteroidImage, (*hit)->getX()-16, (*hit)->getY(), 0, 1);
+        game->addItem(asteroid);
+        eBulletsandPlayer.push_back(asteroid);
+        Asteroid *asteroidT = new Asteroid(asteroidImage, (*hit)->getX()+48, (*hit)->getY(), 0, 1);
+        game->addItem(asteroidT);
+        eBulletsandPlayer.push_back(asteroidT);
+      }
+      delete (*it);
+      delete (*hit);
+      (*it) = NULL;
+      eBulletsandPlayer.erase(hit);
+      break;
+    }
+  }
+  for(unsigned int i = 0; i < pBullets.size(); i++)
+  {
+    if(pBullets[i] == NULL)
+    {
+      pBullets[i] = pBullets[pBullets.size()-1];
+      pBullets.pop_back();
+    }
   }
 }
 
 void MainWindow::playerHit()
 {
   timer->stop();
+  score_ -= 5;
+  QString temp = QString::number(score_);
+  scoreValue->setText(temp);
   //If the player has more lives
   if(player->lives > 0)
   {
@@ -390,6 +461,10 @@ void MainWindow::playerHit()
     gameOver->setBrush(brush);
     gameOver->setFont(serifFont);
     gameOver->setPos(180, 350);
+    if(score_ > highScores_[4])
+    {
+      gameOver->setText(gameOver->text()+"\nHigh Score!");
+    }
     game->addItem(gameOver);
   }
 }
@@ -409,23 +484,23 @@ void MainWindow::getHighScores()
   //If the file doesn't exist, create a default list of high scores
   if(!hsfile.is_open())
   {
-    score = "Tommy Trojan - 100000";
+    score = "Tommy Trojan - 100";
     si = new QStandardItem(score);
     highScoreList.push_back(si);
     hSModel->setItem(5, si);
-    score = "Tommy Trojan - 200000";
+    score = "Tommy Trojan - 200";
     si = new QStandardItem(score);
     highScoreList.push_back(si);
     hSModel->setItem(4, si);
-    score = "Tommy Trojan - 300000";
+    score = "Tommy Trojan - 300";
     si = new QStandardItem(score);
     highScoreList.push_back(si);
     hSModel->setItem(3, si);
-    score = "Tommy Trojan - 400000";
+    score = "Tommy Trojan - 400";
     si = new QStandardItem(score);
     highScoreList.push_back(si);
     hSModel->setItem(2, si);
-    score = "Tommy Trojan - 500000";
+    score = "Tommy Trojan - 500";
     si = new QStandardItem(score);
     highScoreList.push_back(si);
     hSModel->setItem(1, si);
@@ -434,6 +509,10 @@ void MainWindow::getHighScores()
     highScoreList.push_back(si);
     hSModel->setItem(0, si);
     highScores->setModel(hSModel);
+    for(int i = 0; i < 5; i++)
+    {
+      highScores_[i] = ((i+1)*100);
+    }
   }
   else
   {
@@ -448,6 +527,13 @@ void MainWindow::getHighScores()
       si = new QStandardItem(score);
       highScoreList.push_back(si);
       hSModel->setItem(i,si);
+    }
+    int scores;
+    for(int i = 0; i < 5; i++)
+    {
+      std::getline(hsfile, scoreLine);
+      scores = std::atoi(scoreLine.c_str());
+      highScores_[i] = scores;
     }
     highScores->setModel(hSModel);
   }

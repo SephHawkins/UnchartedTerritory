@@ -2,7 +2,7 @@
 
 Player::Player(QPixmap *p, int xVal, int yVal, int xVelo, int yVelo): Object(p, xVal, yVal, xVelo, yVelo)
 {
-  lives = 0;
+  lives = 2;
   type = "Player";
 }
 

@@ -92,6 +92,7 @@ private:
     std::vector<QStandardItem*> highScoreList;
     std::vector<Object*> pBullets;
     std::vector<Object*> eBulletsandPlayer;
+    std::vector<int> toDelete;
     
     //Fills in the high scores from the high score file
     void getHighScores();
@@ -101,6 +102,7 @@ private:
     bool boss;
     int count;
     int score_;
+    int highScores_[5];
     
 public:
     void keyPressEvent(QKeyEvent *e);

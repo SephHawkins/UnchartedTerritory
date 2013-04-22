@@ -2,7 +2,7 @@
 
 Asteroid::Asteroid(QPixmap *p, int xVal, int yVal, int xVelo, int yVelo): Object(p, xVal, yVal, xVelo, yVelo)
 {
-
+  type = "Asteroid";
 }
 
 void Asteroid::onHit()
