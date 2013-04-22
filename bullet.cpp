@@ -2,7 +2,7 @@
 
 Bullet::Bullet(QPixmap *p, int xVal, int yVal, int xVelo, int yVelo): Object(p, xVal, yVal, xVelo, yVelo)
 {
-
+  type = "Bullet";
 }
 
 void Bullet::onHit()

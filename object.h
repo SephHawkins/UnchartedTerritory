@@ -1,6 +1,7 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 #include <QGraphicsPixmapItem>
+#include <string>
 
 class Object : public QGraphicsPixmapItem
 {
@@ -13,6 +14,8 @@ class Object : public QGraphicsPixmapItem
  public:
   Object(QPixmap *p, int xVal, int yVal, int xVelo, int yVelo);
   virtual void move() = 0;
-  virtual void onHit() = 0;
+  int getY(){return y;}
+  int getX(){return x;}
+  std::string type;
 };
 #endif

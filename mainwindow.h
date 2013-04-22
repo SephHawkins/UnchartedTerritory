@@ -28,6 +28,10 @@
 #include "gamescene.h"
 #include "basicalien.h"
 #include "bullet.h"
+#include "asteroid.h"
+#include "lasteroid.h"
+#include "missile.h"
+#include "divealien.h"
 
 /** The MainWindow class. Contains all of the Widgets, Items,
  * Layouts and Objects required to create the program.
@@ -69,23 +73,40 @@ private:
     QLineEdit *nameField;
     //Objects
     Player *player;
-    BasicAlien *testAlien;
-    Bullet *testBullet;
+    //Text Items
+    QGraphicsSimpleTextItem *gameOver;
+    QGraphicsSimpleTextItem *score;
+    QGraphicsSimpleTextItem *scoreValue;
     //The PixMaps for various things
     QPixmap *bulletImage;
     QPixmap *basicAlienImage;
     QPixmap *playerImage;
+    QPixmap *asteroidImage;
+    QPixmap *lasteroidImage;
+    QPixmap *diveAlienImage;
+    QPixmap *missileImage;
+    QPixmap *explodeImage;
     
     //Various members used to hold data in between functions
     std::string playerName;
     std::vector<QStandardItem*> highScoreList;
+    std::vector<Object*> pBullets;
+    std::vector<Object*> eBulletsandPlayer;
     
     //Fills in the high scores from the high score file
     void getHighScores();
     
+    //Other data members
+    bool gameInProgress;
+    bool boss;
+    int count;
+    int score_;
+    
 public:
     void keyPressEvent(QKeyEvent *e);
     void keyReleaseEvent(QKeyEvent *e);
+    std::vector<Object*>::iterator checkCollision(std::vector<Object*>::iterator it, bool &ok);
+    void playerHit();
     
 public slots:
     //The slots that react to various in-game events

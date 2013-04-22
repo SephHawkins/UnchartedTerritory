@@ -5,24 +5,40 @@
  * their slots.
  */
 MainWindow::MainWindow()  {
+    boss = 0;
+    gameInProgress = 0;
+    count = 0;
+    
+    gameOver = NULL;
     
     //The Timer
     timer = new QTimer(this);
     timer->setInterval(5);
     connect(timer, SIGNAL(timeout()), this, SLOT(handleTimer()));
 
-    testBullet = NULL;
     //The Scene and the view
     game = new GameScene(this);
     game->setSceneRect(0,0, 600, 800);
+    QPixmap background("images/background.jpg");
+    QBrush temp(background);
+    game->setBackgroundBrush(temp);
     gameView = new QGraphicsView(game);
     gameView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     gameView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    //gameView = new QGraphicsView(scene);
     view = new QGraphicsView();
     view->setFixedSize(600, 600);
     view->setWindowTitle("Game");
     
+    //The Pixmaps
+    playerImage = new QPixmap("images/player.png");
+    basicAlienImage = new QPixmap("images/BasicAlien.png");
+    bulletImage = new QPixmap("images/Bullet.png");
+    asteroidImage = new QPixmap("images/asteroid.png");
+    lasteroidImage = new QPixmap("images/lasteroid.png");
+    diveAlienImage = new QPixmap("images/diveAlien.png");
+    missileImage = new QPixmap("images/missile.png");
+    explodeImage = new QPixmap("images/explosion.png");
+  
     //The Individual Layouts
     buttons = new QVBoxLayout();
     mainLayout = new QGridLayout();
@@ -43,7 +59,7 @@ MainWindow::MainWindow()  {
     instructions =  new QTextEdit("Instructions: Enter your name into the name box. Hit start to begin the game. Use the left and right arrowkeys to move left and right, and spacebar to shoot");
     instructions->setReadOnly(1);
     
-    //The start and quit Buttons
+    //The start, pause, and quit Buttons
     quit = new QPushButton("&Quit", this);
     connect(quit, SIGNAL(clicked()), qApp, SLOT(quit()));
     startGame = new QPushButton("&Start", this);
@@ -89,6 +105,17 @@ void MainWindow::show()
  */
 void MainWindow::beginGame()
 {
+  if(gameInProgress)
+  {
+    return;
+  }
+  if(gameOver != NULL)
+  {
+    game->removeItem(gameOver);
+    delete gameOver;
+    
+  }
+  gameInProgress = 1;
   QString temp = nameField->text();
   playerName = temp.toStdString();
   if(playerName == "")
@@ -96,69 +123,11 @@ void MainWindow::beginGame()
     nameField->setFocus();
     return;
   }
-  playerImage = new QPixmap("images/player.png");
-  basicAlienImage = new QPixmap("images/BasicAlien.png");
-  bulletImage = new QPixmap("images/Bullet.png");
   player = new Player(playerImage, 275, 615, 0, 0);
-  testAlien = new BasicAlien(basicAlienImage, 80, 300, 1, 0);
-  game->addItem(testAlien);
+  eBulletsandPlayer.push_back(player);
   game->addItem(player);
   timer->start();
   gameView->setFocus();
-  /*//Creates the board
-  int *values;
-  int dim = static_cast<int>(sqrt(iSize));
-  GUITile *tempTile;
-  if(b_)
-  {
-    delete b_;
-    while(tiles.size() != 0)
-    {
-      tempTile = tiles.back();
-      delete tempTile;
-      tiles.pop_back();
-    }
-  }
-  moves = 0;
-  b_ = new Board(iSize, iInitMoves, iSeed);
-  //Runs the heuristic to determine the optimal set of moves
-  PuzzleHeuristic *ph = new ManhattanHeuristic;
-  PuzzleSolver ps(*b_);
-  ps.run(ph);
-  bestMoves = ps.getSolution().size();
-  delete ph;
-  values = b_->getTiles();
-  //Creates the graphical tiles
-    for(int i = 0; i < iSize; i++)
-    {
-      if(values[i] != 0)
-      {
-        tempTile = new GUITile(i, values[i], (75*(i%dim)), (75*(i/dim)), 75, 75, this);
-        tiles.push_back(tempTile);
-        scene->addItem(tempTile);
-        scene->addItem(tempTile->getTextItem());
-      }
-    }
-    //If the puzzle is solved, display the win scenario
-  if(b_->solved())
-  {
-    //If they have solved a puzzle before this
-    if(puzzle_solved == 1)
-    {
-      delete winner;
-      delete winLayout;
-      delete winView;
-    }
-    puzzle_solved = 1;
-    winView = new QGraphicsView();
-    winLayout = new QHBoxLayout();
-    winner = new QPushButton("You Won!\nMoves: 0\nOptimal Moves: 0");
-    connect(winner, SIGNAL(clicked()), winView, SLOT(close()));
-    winLayout->addWidget(winner);
-    winView->setLayout(winLayout);
-    winView->show();
-  }
-}*/
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent *e)
@@ -179,6 +148,10 @@ void MainWindow::keyReleaseEvent(QKeyEvent *e)
 
 void MainWindow::keyPressEvent(QKeyEvent *e)
 {
+  if(!timer->isActive() && e->key() != Qt::Key_P)
+  {
+    return;
+  }
   QWidget::keyPressEvent(e);
   switch(e->key())
   {
@@ -194,8 +167,12 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
     }
     case Qt::Key_Control:
     {
-      testBullet = new Bullet(bulletImage, player->getX()+24, player->getY(), 0, -2);
-      game->addItem(testBullet);
+      if(pBullets.size() < 5)
+      {
+        Bullet *bullet = new Bullet(bulletImage, player->getX()+24, player->getY(), 0, -3); 
+        game->addItem(bullet);
+        pBullets.push_back(bullet);
+      }
       break;
     }
     case Qt::Key_P:
@@ -208,12 +185,213 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
   }
 }
 
+std::vector<Object*>::iterator MainWindow::checkCollision(std::vector<Object*>::iterator it, bool &ok)
+{
+  std::vector<Object*>::iterator hit;
+  for(hit = eBulletsandPlayer.begin()+1; hit < eBulletsandPlayer.end(); ++hit)
+    {
+      if((*it)->collidesWithItem(*hit))
+      {
+        ok = 1;
+        return hit;
+      }
+    }
+    ok = 0;
+    return hit;
+}
 void MainWindow::handleTimer()
 {
+  bool ok;
+  if(!boss)
+  {
+    count++;
+  }
+  //Checking for collision between player and enemies
+  std::vector<Object*>::iterator pit = eBulletsandPlayer.begin();
+  checkCollision(pit, ok);
+  if(ok)
+  {
+    playerHit();
+    return;
+  }
+  //Checking for collision between player's bullets and the enemies
+  for(std::vector<Object*>::iterator it = pBullets.begin(); it < pBullets.end(); ++it)
+  {
+    std::vector<Object*>::iterator hit = checkCollision(it, ok);
+    if(ok)
+    {
+      game->removeItem(*it);
+      game->removeItem(*hit);
+      delete (*it);
+      delete (*hit);
+      pBullets.erase(it);
+      eBulletsandPlayer.erase(hit);    
+    }
+  }
+  
+  //Moving the player
   player->move();
-  if(testBullet != NULL)
-    testBullet->move();
-  testAlien->move();
+  
+  //Moving the player's bullets
+  for(std::vector<Object*>::iterator it = pBullets.begin(); it < pBullets.end(); ++it)
+  {
+    (*it)->move();
+    if((*it)->getY() < 0)
+    {
+      delete (*it);
+      pBullets.erase(it);      
+    }
+  }
+  
+  //Creating asteroids and Large Asteroids.
+  if(count % 150 == 0)
+  {
+    if(count % 600 == 0)
+    {
+    lAsteroid *lasteroid = new lAsteroid(lasteroidImage, (rand()%300+120), (rand()%60-50), 0, 1);
+    game->addItem(lasteroid);
+    eBulletsandPlayer.push_back(lasteroid);
+    }
+    else
+    {
+    Asteroid *asteroid = new Asteroid(asteroidImage, (rand()%300+120), (rand()%60-50), 0, 1);
+    game->addItem(asteroid);
+    eBulletsandPlayer.push_back(asteroid);
+    }
+  }
+
+  //Creating Alien Objects at certain intervals
+  if(count % 420 == 0)
+  {
+    int check = rand()%2;
+    switch(check)
+    {
+      case 0:
+      {
+        BasicAlien *alien = new BasicAlien(basicAlienImage, 60, (rand()%250+100), 1, 0);
+        game->addItem(alien);
+        eBulletsandPlayer.push_back(alien);
+        break;
+      }
+      case 1:
+      {
+        BasicAlien *alien = new BasicAlien(basicAlienImage, 440, (rand()%250+100), -1, 0);
+        game->addItem(alien);
+        eBulletsandPlayer.push_back(alien);
+        break;
+      }
+    }
+  }
+  
+  //Creating diveAlien Objects at certain intervals
+  if(count % 981 == 0)
+  {
+    DiveAlien *diveAlien = new DiveAlien(diveAlienImage, (rand()%300+120), 0, 0, 1);
+    game->addItem(diveAlien);
+    eBulletsandPlayer.push_back(diveAlien);
+  }
+
+  //Moving the objects, other than the player
+  for(std::vector<Object*>::iterator it = eBulletsandPlayer.begin()+1; it < eBulletsandPlayer.end(); ++it)
+  {
+    //If it's off the screen
+    if((*it)->getY() < -60 || (*it)->getX() > 440 || (*it)->getX() < 100 || (*it)->getY() > 700)
+    {
+      game->removeItem(*it);
+      delete (*it);
+      eBulletsandPlayer.erase(it);
+      continue;
+    }
+    //If it's a Dive Alien
+    if((*it)->type == "DiveAlien")
+    {
+      if((*it)->getY() > 300)
+      {
+        DiveAlien *temp = (DiveAlien*) (*it);
+        temp->zoomOff();
+        Missile *missile = new Missile(missileImage, (*it)->getX()+16, (*it)->getY()+48, 0, 1);
+        game->addItem(missile);
+        eBulletsandPlayer.push_back(missile);
+      }
+    }
+    
+    //If it's a Basic Alien
+    if((*it)->type == "BasicAlien")
+    {
+      if((*it)->getX() == 200 || (*it)->getX() == 350)
+      {
+        Bullet *bullet = new Bullet(bulletImage, (*it)->getX()+24, (*it)->getY()+64, 0, 2);
+        game->addItem(bullet);
+        eBulletsandPlayer.push_back(bullet);
+      }
+    }
+    
+    //If it's a missile
+    if((*it)->type == "Missile")
+    {
+      if((*it)->getY() > 580)
+      {
+        Missile *temp = (Missile*) (*it);
+        temp->explode();
+        temp->setPixmap(*explodeImage);
+        if(temp->time == 0)
+        {
+          game->removeItem(temp);
+          delete (*it);
+          eBulletsandPlayer.erase(it);
+        }
+      }
+    }
+    (*it)->move();
+  }
+}
+
+void MainWindow::playerHit()
+{
+  timer->stop();
+  //If the player has more lives
+  if(player->lives > 0)
+  {
+    player->lives--;
+    for(std::vector<Object*>::iterator it = pBullets.begin(); it < pBullets.end(); ++it)
+    {
+      game->removeItem(*it);
+      delete(*it);
+    }
+    pBullets.clear();
+    for(std::vector<Object*>::iterator it = eBulletsandPlayer.begin()+1; it < eBulletsandPlayer.end(); ++it)
+    {
+      game->removeItem(*it);
+      delete(*it);
+    }
+    eBulletsandPlayer.clear();
+    eBulletsandPlayer.push_back(player);
+    timer->start();
+  }
+  //If the player is out of lives
+  else
+  {
+  for(std::vector<Object*>::iterator it = pBullets.begin(); it < pBullets.end(); ++it)
+    {
+      game->removeItem(*it);
+      delete(*it);
+    }
+    pBullets.clear();
+    for(std::vector<Object*>::iterator it = eBulletsandPlayer.begin(); it < eBulletsandPlayer.end(); ++it)
+    {
+      game->removeItem(*it);
+      delete(*it);
+    }
+    eBulletsandPlayer.clear();
+    gameInProgress = 0;
+    QBrush brush(Qt::white);
+    QFont serifFont("Times", 40);
+    gameOver = new QGraphicsSimpleTextItem("Game Over");
+    gameOver->setBrush(brush);
+    gameOver->setFont(serifFont);
+    gameOver->setPos(180, 350);
+    game->addItem(gameOver);
+  }
 }
 
 void MainWindow::pauseGame()

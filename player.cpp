@@ -2,7 +2,8 @@
 
 Player::Player(QPixmap *p, int xVal, int yVal, int xVelo, int yVelo): Object(p, xVal, yVal, xVelo, yVelo)
 {
-  lives = 3;
+  lives = 0;
+  type = "Player";
 }
 
 void Player::move()
@@ -14,18 +15,6 @@ void Player::move()
   x += xVel;
   y = y;
   setPos(x,y);
-}
-
-void Player::onHit()
-{
-  if(lives > 0)
-  {
-    lives--;
-  }
-  else
-  {
-  
-  }
 }
 
 void Player::setXVel(int xVelo)
