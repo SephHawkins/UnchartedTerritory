@@ -5,11 +5,6 @@ BasicAlien::BasicAlien(QPixmap *p, int xVal, int yVal, int xVelo, int yVelo): Ob
   type = "BasicAlien";
 }
 
-void BasicAlien::onHit()
-{
-
-}
-
 void BasicAlien::move()
 {
   x += xVel;

@@ -39,6 +39,7 @@ MainWindow::MainWindow()  {
     diveAlienImage = new QPixmap("images/diveAlien.png");
     missileImage = new QPixmap("images/missile.png");
     explodeImage = new QPixmap("images/explosion.png");
+    bossImage = new QPixmap("images/boss.png");
   
     //The Individual Layouts
     buttons = new QVBoxLayout();
@@ -219,10 +220,32 @@ std::vector<Object*>::iterator MainWindow::checkCollision(std::vector<Object*>::
 void MainWindow::handleTimer()
 {
   bool ok;
-  if(!boss)
+  if(count == 1000)
   {
-    count++;
+    timer->stop();
+    count = 0;
+    for(std::vector<Object*>::iterator it = pBullets.begin(); it < pBullets.end(); ++it)
+    {
+      game->removeItem(*it);
+      delete(*it);
+    }
+    pBullets.clear();
+    for(std::vector<Object*>::iterator it = eBulletsandPlayer.begin()+1; it < eBulletsandPlayer.end(); ++it)
+    {
+      game->removeItem(*it);
+      delete(*it);
+    }
+    eBulletsandPlayer.clear();
+    eBulletsandPlayer.push_back(player);
+    boss = new Boss(bossImage, 175, -300, 0, 1);
+    game->addItem(boss);
+    eBulletsandPlayer.push_back(boss);
+    disconnect(timer, SIGNAL(timeout()), this, SLOT(handleTimer()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(bossTimer()));
+    timer->start();
+    return;
   }
+  count++;
   
   //Moving the player
   player->move();
@@ -471,7 +494,23 @@ void MainWindow::playerHit()
 
 void MainWindow::pauseGame()
 {
+  if(timer->isActive())
+    timer->stop();
+  else
+    timer->start();
+}
 
+
+void MainWindow::bossTimer()
+{
+  if(boss->getY() < 140)
+  {
+    boss->move();
+  }
+  else
+  {
+  
+  }
 }
 
 void MainWindow::getHighScores()

@@ -32,6 +32,7 @@
 #include "lasteroid.h"
 #include "missile.h"
 #include "divealien.h"
+#include "boss.h"
 
 /** The MainWindow class. Contains all of the Widgets, Items,
  * Layouts and Objects required to create the program.
@@ -73,6 +74,7 @@ private:
     QLineEdit *nameField;
     //Objects
     Player *player;
+    Boss *boss;
     //Text Items
     QGraphicsSimpleTextItem *gameOver;
     QGraphicsSimpleTextItem *score;
@@ -86,6 +88,7 @@ private:
     QPixmap *diveAlienImage;
     QPixmap *missileImage;
     QPixmap *explodeImage;
+    QPixmap *bossImage;
     
     //Various members used to hold data in between functions
     std::string playerName;
@@ -99,7 +102,6 @@ private:
     
     //Other data members
     bool gameInProgress;
-    bool boss;
     int count;
     int score_;
     int highScores_[5];
@@ -115,6 +117,7 @@ public slots:
     void beginGame();
     void handleTimer();
     void pauseGame();
+    void bossTimer();
 };
 
 #endif // MAINWINDOW_H
