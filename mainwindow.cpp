@@ -95,7 +95,7 @@ MainWindow::MainWindow()  {
  */
 MainWindow::~MainWindow()
 {
-  
+  writeHighScores();
 }
 
 /** Shows the view */
@@ -121,7 +121,7 @@ void MainWindow::beginGame()
     delete score;
     game->removeItem(scoreValue);
     delete scoreValue;
-    score_ = 0;    
+    score_ = 0;
   }
   QString temp = nameField->text();
   playerName = temp.toStdString();
@@ -490,6 +490,7 @@ void MainWindow::playerHit()
     if(score_ > highScores_[4])
     {
       gameOver->setText(gameOver->text()+"\nHigh Score!");
+      replaceHighScores();
     }
     game->addItem(gameOver);
   }
@@ -498,9 +499,15 @@ void MainWindow::playerHit()
 void MainWindow::pauseGame()
 {
   if(timer->isActive())
+  {
     timer->stop();
+    gameView->setFocus();
+  }
   else
+  {
     timer->start();
+    gameView->setFocus();
+  }
 }
 
 
@@ -580,6 +587,7 @@ void MainWindow::bossTimer()
           if(score_ > highScores_[4])
           {
             gameOver->setText(gameOver->text()+"\nHigh Score!");
+            replaceHighScores();
           }
           game->addItem(gameOver);
           return;
@@ -742,6 +750,7 @@ void MainWindow::getHighScores()
     for(int i = 0; i < 5; i++)
     {
       highScores_[i] = ((i+1)*100);
+      names_[i] = "Tommy Trojan";
     }
   }
   else
@@ -759,12 +768,68 @@ void MainWindow::getHighScores()
       hSModel->setItem(i,si);
     }
     int scores;
+    hsfile.close();
+    hsfile.open("highscores.txt");
     for(int i = 0; i < 5; i++)
     {
-      std::getline(hsfile, scoreLine);
+      std::getline(hsfile, scoreLine, '-');
+      names_[i] = scoreLine;
+      hsfile>>scoreLine;
       scores = std::atoi(scoreLine.c_str());
       highScores_[i] = scores;
     }
     highScores->setModel(hSModel);
+  }
+}
+
+void MainWindow::replaceHighScores()
+{
+  QStandardItem* si;
+  int i;
+  for(i = 4; i >= 0; i--)
+  {
+    if(highScores_[i] > score_)
+      break;
+  }
+  for(int q = 4; q > (i+1); q--)
+  {
+    highScores_[q] = highScores_[q-1];
+    names_[q] = names_[q-1];
+  }
+  names_[i+1] = playerName;
+  highScores_[i+1] = score_;
+  QString score(QString::fromStdString(playerName));
+  score = score + " - ";
+  QString temp;
+  temp.setNum(score_);
+  score = score + temp;
+  QStandardItem *temp_;
+  si = new QStandardItem(score);
+  hSModel->setItem(5, si);
+  highScoreList.push_back(si);
+  for(int j = 5; j > i+2; j--)
+  {
+    temp_ = hSModel->takeItem(j-1);
+    si = hSModel->takeItem(j);
+    hSModel->setItem(j, temp_);
+    hSModel->setItem(j-1, si);
+
+  }
+  highScores->setModel(hSModel);
+}
+
+void MainWindow::writeHighScores()
+{
+  std::ofstream output;
+  output.open("highscores.txt");
+  for(int i = 0; i < 5; i++)
+  {
+    if(names_[i] == playerName)
+    {
+      output<<std::endl;
+      output<<names_[i]<<" - "<<highScores_[i];
+    }
+    else
+      output<<names_[i]<<"- "<<highScores_[i];
   }
 }

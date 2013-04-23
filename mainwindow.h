@@ -110,12 +110,15 @@ private:
     int laserCount;
     int score_;
     int highScores_[5];
+    std::string names_[5];
     
 public:
     void keyPressEvent(QKeyEvent *e);
     void keyReleaseEvent(QKeyEvent *e);
     std::vector<Object*>::iterator checkCollision(std::vector<Object*>::iterator it, bool &ok);
     void playerHit();
+    void writeHighScores();
+    void replaceHighScores();
     
 public slots:
     //The slots that react to various in-game events
