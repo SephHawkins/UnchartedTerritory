@@ -9,6 +9,7 @@ MainWindow::MainWindow()  {
     gameInProgress = 0;
     count = 0;
     score_ = 0;
+    laserCount = -1000;
     
     gameOver = NULL;
     
@@ -122,7 +123,13 @@ void MainWindow::beginGame()
     game->removeItem(scoreValue);
     delete scoreValue;
     score_ = 0;
+    if(laserCount != -1000)
+    {
+      disconnect(timer, SIGNAL(timeout()), this, SLOT(bossTimer()));
+      connect(timer, SIGNAL(timeout()), this, SLOT(handleTimer()));
+    }
   }
+  count = 0;
   QString temp = nameField->text();
   playerName = temp.toStdString();
   if(playerName == "")
@@ -513,6 +520,7 @@ void MainWindow::pauseGame()
 
 void MainWindow::bossTimer()
 {
+  int bulletSpeed;
   if(boss->getY() < 140)
   {
     boss->move();
@@ -522,17 +530,18 @@ void MainWindow::bossTimer()
   {
     if(count == 0)
     {
+      bulletSpeed = 2;
       laser = new Laser(sightLaser, 285, 370, 0, 0);
     }
     count++;
     //Fixing and making the laser
-    if(laserCount == 1000)
+    if(laserCount == 500)
     {
       laser->setPixmap(*sightLaser);
       game->addItem(laser);
       laser->deadly = 0;
     }
-    if(laserCount == 1500)
+    if(laserCount == 1000)
     {
       laser->setPixmap(*deadlyLaser);
       laser->deadly = 1;    
@@ -547,7 +556,7 @@ void MainWindow::bossTimer()
     //Firing Bullets
     if(count % 25 == 0)
     {
-      Bullet *bullet = new Bullet(bulletImage, rand()%234+175, 275, 0, 2);
+      Bullet *bullet = new Bullet(bulletImage, rand()%234+175, 275, 0, bulletSpeed);
       game->addItem(bullet);
       eBulletsandPlayer.push_back(bullet);
     }
@@ -560,8 +569,19 @@ void MainWindow::bossTimer()
         QString temp = QString::number(score_);
         scoreValue->setText(temp);
         boss->health--;
+        if(boss->health == 50)
+        {
+          bulletSpeed++;
+        }
+        else if(boss->health == 25)
+        {
+          bulletSpeed++;
+        }
         if(boss->health == 0)
         {
+          score_ += 500;
+          QString temp = QString::number(score_);
+          scoreValue->setText(temp);
           delete boss;
           delete laser;
           timer->stop();
