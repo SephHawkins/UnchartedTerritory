@@ -549,7 +549,9 @@ void MainWindow::bossTimer()
     {
       if((*it)->collidesWithItem(boss))
       {
-        
+        score_ += 5;
+        QString temp = QString::number(score_);
+        scoreValue->setText(temp);
         boss->health--;
         if(boss->health == 0)
         {
