@@ -8,7 +8,7 @@ class Boss: public Object
  public:
   Boss(QPixmap *p, int xVal, int yVal, int xVelo, int yVelo);
   void move();
-  void fireLasers();
+  int health;
 };
 
 #endif

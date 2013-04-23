@@ -40,6 +40,8 @@ MainWindow::MainWindow()  {
     missileImage = new QPixmap("images/missile.png");
     explodeImage = new QPixmap("images/explosion.png");
     bossImage = new QPixmap("images/boss.png");
+    deadlyLaser = new QPixmap("images/laser.png");
+    sightLaser = new QPixmap("images/lasersight.png");
   
     //The Individual Layouts
     buttons = new QVBoxLayout();
@@ -121,7 +123,6 @@ void MainWindow::beginGame()
     delete scoreValue;
     score_ = 0;    
   }
-  gameInProgress = 1;
   QString temp = nameField->text();
   playerName = temp.toStdString();
   if(playerName == "")
@@ -129,6 +130,7 @@ void MainWindow::beginGame()
     nameField->setFocus();
     return;
   }
+  gameInProgress = 1;
   player = new Player(playerImage, 275, 615, 0, 0);
   eBulletsandPlayer.push_back(player);
   game->addItem(player);
@@ -220,7 +222,8 @@ std::vector<Object*>::iterator MainWindow::checkCollision(std::vector<Object*>::
 void MainWindow::handleTimer()
 {
   bool ok;
-  if(count == 1000)
+  //If it's boss time
+  if(count == 5000)
   {
     timer->stop();
     count = 0;
@@ -239,14 +242,12 @@ void MainWindow::handleTimer()
     eBulletsandPlayer.push_back(player);
     boss = new Boss(bossImage, 175, -300, 0, 1);
     game->addItem(boss);
-    eBulletsandPlayer.push_back(boss);
     disconnect(timer, SIGNAL(timeout()), this, SLOT(handleTimer()));
     connect(timer, SIGNAL(timeout()), this, SLOT(bossTimer()));
     timer->start();
     return;
   }
   count++;
-  
   //Moving the player
   player->move();
   
@@ -297,12 +298,15 @@ void MainWindow::handleTimer()
     game->addItem(diveAlien);
     eBulletsandPlayer.push_back(diveAlien);
   }
-  
   //Moving the objects, other than the player
     for(std::vector<Object*>::iterator it = eBulletsandPlayer.begin()+1; it != eBulletsandPlayer.end(); ++it)
     {
-      //std::cout<<"Inner loop began"<<(*it)<<std::endl;
-      //std::cout<<"Type: "<<(*it)->type<<std::endl;
+      if(it < eBulletsandPlayer.begin() || it > eBulletsandPlayer.end())
+        break;
+      /*std::cout<<"Begin "<<(*eBulletsandPlayer.begin())<<std::endl;
+      std::cout<<"End "<<(*eBulletsandPlayer.end()-1)<<std::endl;
+      std::cout<<"Inner loop began"<<(*it)<<std::endl;
+      std::cout<<"Type: "<<(*it)->type<<std::endl;*/
       //If it's off the screen
       if((*it)->getY() < -60 || (*it)->getX() > 460 || (*it)->getX() < 0 || (*it)->getY() > 700)
       {
@@ -390,7 +394,6 @@ void MainWindow::handleTimer()
     playerHit();
     return;
   }
-  
   //Checking for collision between player's bullets and the enemies
   for(std::vector<Object*>::iterator it = pBullets.begin(); it < pBullets.end(); ++it)
   {
@@ -411,7 +414,7 @@ void MainWindow::handleTimer()
       }
       QString temp = QString::number(score_);
       scoreValue->setText(temp);
-      if((*hit)->type == "LAsteroid")
+      /*if((*hit)->type == "LAsteroid")
       {
         Asteroid *asteroid = new Asteroid(asteroidImage, (*hit)->getX()-16, (*hit)->getY(), 0, 1);
         game->addItem(asteroid);
@@ -419,7 +422,7 @@ void MainWindow::handleTimer()
         Asteroid *asteroidT = new Asteroid(asteroidImage, (*hit)->getX()+48, (*hit)->getY(), 0, 1);
         game->addItem(asteroidT);
         eBulletsandPlayer.push_back(asteroidT);
-      }
+      }*/
       delete (*it);
       delete (*hit);
       (*it) = NULL;
@@ -447,13 +450,13 @@ void MainWindow::playerHit()
   if(player->lives > 0)
   {
     player->lives--;
-    for(std::vector<Object*>::iterator it = pBullets.begin(); it < pBullets.end(); ++it)
+    for(std::vector<Object*>::iterator it = pBullets.begin(); it != pBullets.end(); ++it)
     {
       game->removeItem(*it);
       delete(*it);
     }
     pBullets.clear();
-    for(std::vector<Object*>::iterator it = eBulletsandPlayer.begin()+1; it < eBulletsandPlayer.end(); ++it)
+    for(std::vector<Object*>::iterator it = eBulletsandPlayer.begin()+1; it != eBulletsandPlayer.end(); ++it)
     {
       game->removeItem(*it);
       delete(*it);
@@ -465,13 +468,13 @@ void MainWindow::playerHit()
   //If the player is out of lives
   else
   {
-  for(std::vector<Object*>::iterator it = pBullets.begin(); it < pBullets.end(); ++it)
+  for(std::vector<Object*>::iterator it = pBullets.begin(); it != pBullets.end(); ++it)
     {
       game->removeItem(*it);
       delete(*it);
     }
     pBullets.clear();
-    for(std::vector<Object*>::iterator it = eBulletsandPlayer.begin(); it < eBulletsandPlayer.end(); ++it)
+    for(std::vector<Object*>::iterator it = eBulletsandPlayer.begin(); it != eBulletsandPlayer.end(); ++it)
     {
       game->removeItem(*it);
       delete(*it);
@@ -506,10 +509,196 @@ void MainWindow::bossTimer()
   if(boss->getY() < 140)
   {
     boss->move();
+    laserCount = 1;
   }
   else
   {
-  
+    if(count == 0)
+    {
+      laser = new Laser(sightLaser, 285, 370, 0, 0);
+    }
+    count++;
+    //Fixing and making the laser
+    if(laserCount == 1000)
+    {
+      laser->setPixmap(*sightLaser);
+      game->addItem(laser);
+      laser->deadly = 0;
+    }
+    if(laserCount == 1500)
+    {
+      laser->setPixmap(*deadlyLaser);
+      laser->deadly = 1;    
+      laserCount = -500;
+    }
+    if(laserCount == 0)
+    {
+      game->removeItem(laser);
+      laser->deadly = 0;
+    }
+    laserCount++;
+    //Firing Bullets
+    if(count % 25 == 0)
+    {
+      Bullet *bullet = new Bullet(bulletImage, rand()%234+175, 275, 0, 2);
+      game->addItem(bullet);
+      eBulletsandPlayer.push_back(bullet);
+    }
+    //Checking the bullets hitting the boss
+    for(std::vector<Object*>::iterator it = pBullets.begin(); it < pBullets.end(); ++it)
+    {
+      if((*it)->collidesWithItem(boss))
+      {
+        
+        boss->health--;
+        if(boss->health == 0)
+        {
+          delete boss;
+          delete laser;
+          timer->stop();
+          for(std::vector<Object*>::iterator it = pBullets.begin(); it != pBullets.end(); ++it)
+          {
+            game->removeItem(*it);
+            delete(*it);
+          }
+          pBullets.clear();
+          for(std::vector<Object*>::iterator it = eBulletsandPlayer.begin(); it != eBulletsandPlayer.end(); ++it)
+          {
+            game->removeItem(*it);
+            delete(*it);
+          }
+          eBulletsandPlayer.clear();
+          gameInProgress = 0;
+          QBrush brush(Qt::white);
+          QFont serifFont("Times", 40);
+          gameOver = new QGraphicsSimpleTextItem("YOU WIN!");
+          gameOver->setBrush(brush);
+          gameOver->setFont(serifFont);
+          gameOver->setPos(180, 350);
+          if(score_ > highScores_[4])
+          {
+            gameOver->setText(gameOver->text()+"\nHigh Score!");
+          }
+          game->addItem(gameOver);
+          return;
+        }
+        delete (*it);
+        (*it) = NULL;
+        break;
+      }
+    }
+    for(unsigned int i = 0; i < pBullets.size(); i++)
+    {
+      if(pBullets[i] == NULL)
+      {
+        pBullets[i] = pBullets[pBullets.size()-1];
+        pBullets.pop_back();
+      }
+    }
+    
+    //Checking the bullets hitting the bullets
+    bool ok;
+    for(std::vector<Object*>::iterator it = pBullets.begin(); it < pBullets.end(); ++it)
+    {
+      std::vector<Object*>::iterator hit = checkCollision(it, ok);
+      if(ok)
+      {
+        score_++;
+        QString temp = QString::number(score_);
+        scoreValue->setText(temp);
+        delete (*it);
+        delete (*hit);
+        (*it) = NULL;
+        eBulletsandPlayer.erase(hit);
+        break;
+      }
+    }
+    for(unsigned int i = 0; i < pBullets.size(); i++)
+    {
+      if(pBullets[i] == NULL)
+      {
+        pBullets[i] = pBullets[pBullets.size()-1];
+        pBullets.pop_back();
+      }
+    }
+    
+    //Checking the bullets hitting the player
+    std::vector<Object*>::iterator pit = eBulletsandPlayer.begin();
+    checkCollision(pit, ok);
+    if(ok)
+    {
+      if(player->lives == 0)
+      {
+        delete laser;
+        delete boss;
+      }
+      playerHit();
+      if(laserCount > 1000 || laserCount < 0)
+        laserCount = 0;
+      else
+        laserCount = 1;
+      return;
+    }
+    
+    //Checking the laser and player
+    if(laser->deadly == 1)
+    {
+      if(laser->collidesWithItem(player))
+      {
+        if(player->lives == 0)
+        {
+          delete laser;
+          delete boss;
+        }
+        playerHit();
+        if(laserCount > 1000 || laserCount < 0)
+          laserCount = 0;
+        else
+          laserCount = 1;
+        return;
+      }
+    }
+    
+    //Moving the player
+    player->move();
+    //Moving the enemy bullets
+    for(std::vector<Object*>::iterator it = eBulletsandPlayer.begin()+1; it != eBulletsandPlayer.end(); ++it)
+    {
+      (*it)->move();
+      if((*it)->getY() > 700)
+      {
+        delete (*it);
+        (*it) = NULL;
+      }
+    }
+    for(unsigned int i = 1; i < eBulletsandPlayer.size(); i++)
+    {
+      if(eBulletsandPlayer[i] == NULL)
+      {
+        eBulletsandPlayer[i] = eBulletsandPlayer[eBulletsandPlayer.size()-1];
+        eBulletsandPlayer.pop_back();
+      }
+    }
+    //Moving the player's bullets
+    for(std::vector<Object*>::iterator it = pBullets.begin(); it != pBullets.end(); ++it)
+    {
+      (*it)->move();
+      if((*it)->getY() < 120)
+      {
+        delete (*it);
+        (*it) = NULL;
+      }
+    }
+    for(unsigned int i = 0; i < pBullets.size(); i++)
+    {
+      if(pBullets[i] == NULL)
+      {
+        pBullets[i] = pBullets[pBullets.size()-1];
+        pBullets.pop_back();
+      }
+    }
+    
+    
   }
 }
 
