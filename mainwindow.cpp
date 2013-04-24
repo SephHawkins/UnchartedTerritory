@@ -43,6 +43,7 @@ MainWindow::MainWindow()  {
     bossImage = new QPixmap("images/boss.png");
     deadlyLaser = new QPixmap("images/laser.png");
     sightLaser = new QPixmap("images/lasersight.png");
+    livesImage = new QPixmap("images/lives.png"); 
   
     //The Individual Layouts
     buttons = new QVBoxLayout();
@@ -61,7 +62,7 @@ MainWindow::MainWindow()  {
     getHighScores();
     
     //The instructions
-    instructions =  new QTextEdit("Instructions: Enter your name into the name box. Hit start to begin the game. Use the left and right arrowkeys to move left and right, and spacebar to shoot");
+    instructions =  new QTextEdit("Instructions: Enter your name into the name box. Hit start to begin the game. Use the left and right arrowkeys to move left and right, and spacebar to shoot. Avoid or shoot the aliens, asteroids and their weapons");
     instructions->setReadOnly(1);
     
     //The start, pause, and quit Buttons
@@ -86,7 +87,7 @@ MainWindow::MainWindow()  {
     for(int i = 0; i < 3; i++)
     {
       mainLayout->setColumnMinimumWidth(i, 200);
-      mainLayout->setRowMinimumHeight(i, 100);
+      mainLayout->setRowMinimumHeight(i, 80);
     }
     view->setLayout(mainLayout);
 }
@@ -153,6 +154,14 @@ void MainWindow::beginGame()
   scoreValue->setBrush(brush);
   scoreValue->setFont(serifFont);
   game->addItem(scoreValue);
+  for(int i = 0; i < 3; i++)
+  {
+    QGraphicsPixmapItem *life = new QGraphicsPixmapItem();
+    life->setPixmap(*livesImage);
+    life->setPos(380+(35*i),115);
+    lives_.push_back(life);
+    game->addItem(life);
+  }
   timer->start();
   gameView->setFocus();
 }
@@ -470,6 +479,8 @@ void MainWindow::playerHit()
     }
     eBulletsandPlayer.clear();
     eBulletsandPlayer.push_back(player);
+    delete lives_[lives_.size()-1];
+    lives_.pop_back();
     timer->start();
   }
   //If the player is out of lives
@@ -487,6 +498,8 @@ void MainWindow::playerHit()
       delete(*it);
     }
     eBulletsandPlayer.clear();
+    delete lives_[lives_.size()-1];
+    lives_.pop_back();
     gameInProgress = 0;
     QBrush brush(Qt::white);
     QFont serifFont("Times", 40);

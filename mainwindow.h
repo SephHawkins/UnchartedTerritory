@@ -93,13 +93,14 @@ private:
     QPixmap *bossImage;
     QPixmap *deadlyLaser;
     QPixmap *sightLaser;
+    QPixmap *livesImage;
     
     //Various members used to hold data in between functions
     std::string playerName;
     std::vector<QStandardItem*> highScoreList;
     std::vector<Object*> pBullets;
     std::vector<Object*> eBulletsandPlayer;
-    std::vector<int> toDelete;
+    std::vector<QGraphicsPixmapItem*> lives_;
     
     //Fills in the high scores from the high score file
     void getHighScores();
