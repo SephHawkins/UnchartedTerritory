@@ -62,7 +62,7 @@ MainWindow::MainWindow()  {
     getHighScores();
     
     //The instructions
-    instructions =  new QTextEdit("Instructions: Enter your name into the name box. Hit start to begin the game. Use the left and right arrowkeys to move left and right, and spacebar to shoot. Avoid or shoot the aliens, asteroids and their weapons");
+    instructions =  new QTextEdit("Instructions: Enter your name into the name box. Hit start to begin the game. Use the A and D keys to move left and right, and the spacebar to shoot. Avoid or shoot the aliens, asteroids and their weapons");
     instructions->setReadOnly(1);
     
     //The start, pause, and quit Buttons
@@ -201,7 +201,7 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
       player->setXVel(1);
       break;
     }
-    case Qt::Key_Control:
+    case Qt::Key_Space:
     {
       if(pBullets.size() < 3)
       {
