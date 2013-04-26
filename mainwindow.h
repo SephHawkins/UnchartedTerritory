@@ -36,7 +36,7 @@
 #include "laser.h"
 
 /** The MainWindow class. Contains all of the Widgets, Items,
- * Layouts and Objects required to create the program.
+ * Layouts and Objects required to create the game.
  * @author Joseph Boman
  */
 
@@ -55,12 +55,11 @@ private:
     GameScene *game;
     QGraphicsView *gameView;
     QGraphicsView *view;
-    //QGraphicsView *gameView;
     //The buttons
     QPushButton *startGame;
     QPushButton *quit;
     QPushButton *pause;
-    //The list view and items for it
+    //The high score list and model
     QListView *highScores;
     QStandardItemModel *hSModel;
     //The layouts
@@ -69,11 +68,11 @@ private:
     QGridLayout *mainLayout;
     //The timer
     QTimer *timer;
-    //The Instructions
+    //The Instructions box
     QTextEdit *instructions;
-    //The Edit Box
+    //The Name Box
     QLineEdit *nameField;
-    //Objects
+    //Special Objects
     Player *player;
     Boss *boss;
     Laser *laser;
@@ -114,11 +113,16 @@ private:
     std::string names_[5];
     
 public:
+    //The keyboard Events
     void keyPressEvent(QKeyEvent *e);
     void keyReleaseEvent(QKeyEvent *e);
+    //Checks for collision
     std::vector<Object*>::iterator checkCollision(std::vector<Object*>::iterator it, bool &ok);
+    //If the player is hit
     void playerHit();
+    //Writes the high scores to a file
     void writeHighScores();
+    //Replaces the high scores in the high score list
     void replaceHighScores();
     
 public slots:

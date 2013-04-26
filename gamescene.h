@@ -4,13 +4,17 @@
 #include <QGraphicsView>
 #include <QWidget>
 #include <QKeyEvent>
-#include <iostream>
 
 class MainWindow;
 
+/** This class represents the scene. It derives from QGraphicsScene 
+ * and is used to reimplement the keyPressEvent and keyReleaseEvent
+ * @author Joseph Boman
+ */
 class GameScene: public QGraphicsScene
 {
   public:
+   /** The MainWindow that created this scene */
    MainWindow *mw_;   
   protected:
    void keyPressEvent(QKeyEvent *e);

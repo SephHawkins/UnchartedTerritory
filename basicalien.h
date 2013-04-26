@@ -3,6 +3,10 @@
 
 #include "object.h"
 
+/** The basic Alien class. Derives from the Object class. An alien moves both
+ * horizontally and vertically
+ * @author Joseph Boman
+ */
 class BasicAlien: public Object
 {
  public:

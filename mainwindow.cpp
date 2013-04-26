@@ -5,12 +5,12 @@
  * their slots.
  */
 MainWindow::MainWindow()  {
+    //Initiating some variables
     boss = 0;
     gameInProgress = 0;
     count = 0;
     score_ = 0;
     laserCount = -1000;
-    
     gameOver = NULL;
     
     //The Timer
@@ -54,7 +54,7 @@ MainWindow::MainWindow()  {
     nameField = new QLineEdit();
     nameLayout->insertRow(1, "Name", nameField);
     
-    //The High Score
+    //The High Score Box
     hSModel = new QStandardItemModel(5, 1);
     highScores = new QListView();
     
@@ -97,6 +97,7 @@ MainWindow::MainWindow()  {
  */
 MainWindow::~MainWindow()
 {
+  //Writes the high scores to a file
   writeHighScores();
 }
 
@@ -107,7 +108,9 @@ void MainWindow::show()
   nameField->setFocus();
 }
 
-/** Called when the start Game button is pressed.
+/** Called when the start Game button is pressed. If the name field is filled in, 
+ * it creates a player, resets the game, and sets up the score, the lives counters,
+ * and starts the timer.
  */
 void MainWindow::beginGame()
 {
@@ -166,9 +169,12 @@ void MainWindow::beginGame()
   gameView->setFocus();
 }
 
+/** If one of the movement keys was released, the player's
+ * velocity is set to 0
+ * @param e The QKeyEvent
+ */
 void MainWindow::keyReleaseEvent(QKeyEvent *e)
 {
-  QWidget::keyPressEvent(e);
   switch(e->key())
   {
     case Qt::Key_A:
@@ -179,21 +185,44 @@ void MainWindow::keyReleaseEvent(QKeyEvent *e)
     {
       player->setXVel(0);
     }
+    case Qt::Key_Left:
+    {
+      player->setXVel(0);
+    }
+    case Qt::Key_Right:
+    {
+      player->setXVel(0);
+    }
   }
 }
 
+/** If P is pressed, pauses the game, if spacebar is pressed
+ * fires a bullet from the player.  If one of the movement keys
+ * is pressed, sets the player's velocity to the appropriate 
+ * value
+ * @param e The QKeyEvent
+ */
 void MainWindow::keyPressEvent(QKeyEvent *e)
 {
   if(!timer->isActive() && e->key() != Qt::Key_P)
   {
     return;
   }
-  QWidget::keyPressEvent(e);
   switch(e->key())
   {
     case Qt::Key_A:
     {
       player->setXVel(-1);
+      break;
+    }
+    case Qt::Key_Left:
+    {
+      player->setXVel(-1);
+      break;
+    }
+    case Qt::Key_Right:
+    {
+      player->setXVel(1);
       break;
     }
     case Qt::Key_D:
@@ -221,6 +250,13 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
   }
 }
 
+/** Checks for collisions between the Object* pointed to by it, and all of the enemies
+ * Returns an iterator to the object that collided, or the end of the enemy vector. 
+ * ok is true if something collided and false otherwise
+ * @param it The iterator to the Object* you are checking 
+ * @param ok A bool
+ * @return An iterator to the colliding object, or to the end of the vector
+ */
 std::vector<Object*>::iterator MainWindow::checkCollision(std::vector<Object*>::iterator it, bool &ok)
 {
   std::vector<Object*>::iterator hit;
@@ -235,6 +271,12 @@ std::vector<Object*>::iterator MainWindow::checkCollision(std::vector<Object*>::
     ok = 0;
     return hit;
 }
+
+/** This is called whenever the timer goes off, prior to 5000 times.
+ * This creates new objects as needed, moves all the old ones, checks for collisions between
+ * objects and deletes them as needed. It also performs special actions such as aliens dropping 
+ * missiles, firing bullets, or changing direction
+ */
 void MainWindow::handleTimer()
 {
   bool ok;
@@ -314,15 +356,13 @@ void MainWindow::handleTimer()
     game->addItem(diveAlien);
     eBulletsandPlayer.push_back(diveAlien);
   }
-  //Moving the objects, other than the player
+  
+  //Checking special instructions or if the objects are off screen
     for(std::vector<Object*>::iterator it = eBulletsandPlayer.begin()+1; it != eBulletsandPlayer.end(); ++it)
     {
       if(it < eBulletsandPlayer.begin() || it > eBulletsandPlayer.end())
         break;
-      /*std::cout<<"Begin "<<(*eBulletsandPlayer.begin())<<std::endl;
-      std::cout<<"End "<<(*eBulletsandPlayer.end()-1)<<std::endl;
-      std::cout<<"Inner loop began"<<(*it)<<std::endl;
-      std::cout<<"Type: "<<(*it)->type<<std::endl;*/
+        
       //If it's off the screen
       if((*it)->getY() < -60 || (*it)->getX() > 460 || (*it)->getX() < 0 || (*it)->getY() > 700)
       {
@@ -330,6 +370,7 @@ void MainWindow::handleTimer()
         (*it) = NULL;
         continue;
       }
+      
       //If it's a Dive Alien
       if((*it)->type == "DiveAlien")
       {
@@ -379,6 +420,8 @@ void MainWindow::handleTimer()
       eBulletsandPlayer.pop_back();
     }
   }
+  
+  //Moving the objects
   for(std::vector<Object*>::iterator it = eBulletsandPlayer.begin()+1; it != eBulletsandPlayer.end(); ++it)
   {
     (*it)->move();
@@ -402,6 +445,7 @@ void MainWindow::handleTimer()
       pBullets.pop_back();
     }
   }
+  
   //Checking for collision between player and enemies
   std::vector<Object*>::iterator pit = eBulletsandPlayer.begin();
   checkCollision(pit, ok);
@@ -410,6 +454,7 @@ void MainWindow::handleTimer()
     playerHit();
     return;
   }
+  
   //Checking for collision between player's bullets and the enemies
   for(std::vector<Object*>::iterator it = pBullets.begin(); it < pBullets.end(); ++it)
   {
@@ -430,15 +475,6 @@ void MainWindow::handleTimer()
       }
       QString temp = QString::number(score_);
       scoreValue->setText(temp);
-      /*if((*hit)->type == "LAsteroid")
-      {
-        Asteroid *asteroid = new Asteroid(asteroidImage, (*hit)->getX()-16, (*hit)->getY(), 0, 1);
-        game->addItem(asteroid);
-        eBulletsandPlayer.push_back(asteroid);
-        Asteroid *asteroidT = new Asteroid(asteroidImage, (*hit)->getX()+48, (*hit)->getY(), 0, 1);
-        game->addItem(asteroidT);
-        eBulletsandPlayer.push_back(asteroidT);
-      }*/
       delete (*it);
       delete (*hit);
       (*it) = NULL;
@@ -456,6 +492,11 @@ void MainWindow::handleTimer()
   }
 }
 
+/** This is called when the player is hit. If the player has lives left,
+ * it clears the screen, subtracts a life, and continues the game
+ * If the player has no lives, then the game ends, a message is displayed
+ * and the high score list is updated if needed
+ */
 void MainWindow::playerHit()
 {
   timer->stop();
@@ -516,6 +557,9 @@ void MainWindow::playerHit()
   }
 }
 
+/** This is called when the pause button is pressed
+ * Pauses or starts the game
+ */
 void MainWindow::pauseGame()
 {
   if(timer->isActive())
@@ -530,7 +574,10 @@ void MainWindow::pauseGame()
   }
 }
 
-
+/** This replaces handleTimer() after 5000 counts. This moves the boss into position, 
+ * creates bullets and the laser, moves things as needed, checks for collisions, and 
+ * deals with the win message if the player defeats the boss. 
+ */
 void MainWindow::bossTimer()
 {
   int bulletSpeed;
@@ -704,6 +751,7 @@ void MainWindow::bossTimer()
     
     //Moving the player
     player->move();
+    
     //Moving the enemy bullets
     for(std::vector<Object*>::iterator it = eBulletsandPlayer.begin()+1; it != eBulletsandPlayer.end(); ++it)
     {
@@ -722,6 +770,7 @@ void MainWindow::bossTimer()
         eBulletsandPlayer.pop_back();
       }
     }
+    
     //Moving the player's bullets
     for(std::vector<Object*>::iterator it = pBullets.begin(); it != pBullets.end(); ++it)
     {
@@ -745,6 +794,9 @@ void MainWindow::bossTimer()
   }
 }
 
+/** This gets the high scores from a high score file, and if it doesn't exist, 
+ * creates a generic list of high scores.
+ */
 void MainWindow::getHighScores()
 {
   std::ifstream hsfile;
@@ -755,19 +807,19 @@ void MainWindow::getHighScores()
   //If the file doesn't exist, create a default list of high scores
   if(!hsfile.is_open())
   {
-    score = "Tommy Trojan - 100";
+    score = "Tommy Trojan - 50";
     si = new QStandardItem(score);
     highScoreList.push_back(si);
     hSModel->setItem(5, si);
-    score = "Tommy Trojan - 200";
+    score = "Tommy Trojan - 100";
     si = new QStandardItem(score);
     highScoreList.push_back(si);
     hSModel->setItem(4, si);
-    score = "Tommy Trojan - 300";
+    score = "Tommy Trojan - 250";
     si = new QStandardItem(score);
     highScoreList.push_back(si);
     hSModel->setItem(3, si);
-    score = "Tommy Trojan - 400";
+    score = "Tommy Trojan - 350";
     si = new QStandardItem(score);
     highScoreList.push_back(si);
     hSModel->setItem(2, si);
@@ -786,6 +838,7 @@ void MainWindow::getHighScores()
       names_[i] = "Tommy Trojan";
     }
   }
+  //If there is a highscores.txt file
   else
   {
     score = "- - - - - - -High Scores- - - - - - -";
@@ -815,6 +868,10 @@ void MainWindow::getHighScores()
   }
 }
 
+/** This function goes through and replaces the scores in the list
+ * with the proper list of high scores, after someone gets a high
+ * score. It updates the list to reflect this
+ */
 void MainWindow::replaceHighScores()
 {
   QStandardItem* si;
@@ -851,6 +908,9 @@ void MainWindow::replaceHighScores()
   highScores->setModel(hSModel);
 }
 
+/** This writes the high scores to a file, 
+ * called "highscores.txt"
+ */
 void MainWindow::writeHighScores()
 {
   std::ofstream output;
