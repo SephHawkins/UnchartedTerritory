@@ -11,29 +11,57 @@ but if the player wins, they will win the game.
 
 Have fun!
 
+
+###The Player
+
+
+![Player](images/player.png "Player")
 ##Things in the Game
 2. Basic Aliens
 	*The basic aliens will fly across the screen firing at the player
+	
+	
+	![Basic Alien](images/BasicAlien.png "Basic Alien")
+	
 2. Diving Aliens
 	*The diving aliens will dive from the top, drop a missile, and fly off at a random direction
+	
+	
+	![Diving Alien](images/diveAlien.png "Diving Alien")
 3. Bullets
 	*The bullets will fire down or up, depending on whether an enemy or player shot them
 	*They will destroy whatever they collide with
+	
+	
+	![Bullet](images/Bullet.png "Bullet")
 3. Missiles
 	*The missiles will fall down, and explode when they hit the bottom of the screen
 	*If the explosion hits the player, the player will die
+	
+	
+	![Missile](images/missile.png "Missile")	
 3. Laser
 	*The laser will be stationary
 	*Sometimes it will be invisible, or charging (red), and do no damage
 	*If the player is hit by the blue laser, the player will die
+	
+	
+	![Charging Laser](images/lasersight.png "Charging Laser")
+	![Deadly Laser](images/laser.png "Deadly Laser")
 4. Asteroids
 	*Asteroids will fall from the top of the screen straight down
 	*Some asteroids will be larger
+	
+	
+	![Asteroid](images/asteroid.png "Asteroid")
+	![Large Asteroid](images/lasteroid.png "Large Asteroid")
 5. Boss Alien Ship
 	*There will be one boss in the game
  	*The boss will move at first, and then be stationary
  	*It will fire bullets and a laser at the player
  	*It will take 100 hits to kill the boss
+ 	
+ 	![Boss](images/boss.png "Boss")
 
 ##Control Scheme
 1. The left and right arrowkeys or A and D will be used to move the player's ship to the left and right, respectively
@@ -75,7 +103,7 @@ The view will contain:
 * A box containing the top scores for the game
 
 
-![The Board Setup](https://sphotos-a.xx.fbcdn.net/hphotos-prn1/64461_10200105554173863_739153238_n.jpg "The Board Setup")
+![The Board Setup](images/layout.jpg "The Board Setup")
 
 ###Classes
 * A MainWindow class
