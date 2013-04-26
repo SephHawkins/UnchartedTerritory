@@ -29,7 +29,7 @@ MainWindow::MainWindow()  {
     gameView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view = new QGraphicsView();
     view->setFixedSize(600, 600);
-    view->setWindowTitle("Game");
+    view->setWindowTitle("Uncharted Territory");
     
     //The Pixmaps
     playerImage = new QPixmap("images/player.png");
