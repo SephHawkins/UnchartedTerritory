@@ -281,10 +281,15 @@ std::vector<Object*>::iterator MainWindow::checkCollision(std::vector<Object*>::
 void MainWindow::handleTimer()
 {
   bool ok;
+  if(count  == 2500)
+  {
+    timer->setInterval(4);
+  }
   //If it's boss time
   if(count == 5000)
   {
     timer->stop();
+    timer->setInterval(3);
     count = 0;
     for(std::vector<Object*>::iterator it = pBullets.begin(); it < pBullets.end(); ++it)
     {
@@ -591,6 +596,7 @@ void MainWindow::bossTimer()
   {
     if(count == 0)
     {
+      timer->setInterval(5);
       bulletSpeed = 2;
       laser = new Laser(sightLaser, 285, 370, 0, 0);
     }
@@ -615,7 +621,7 @@ void MainWindow::bossTimer()
     }
     laserCount++;
     //Firing Bullets
-    if(count % 25 == 0)
+    if(count % 20 == 0)
     {
       Bullet *bullet = new Bullet(bulletImage, rand()%234+175, 275, 0, bulletSpeed);
       game->addItem(bullet);
