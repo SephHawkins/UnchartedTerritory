@@ -1,3 +1,17 @@
+# The Makefile
+Makefile
+
+# Qt Generated files
+moc_mainwindow.cpp
+
+# The final executable
+game_jboman
+
+# Doxygen Generated file
+config.txt
+html/
+latex/
+
 # Compiled Object files
 *.slo
 *.lo
