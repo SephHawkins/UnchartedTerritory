@@ -334,14 +334,14 @@ void MainWindow::handleTimer()
     {
       case 0:
       {
-        BasicAlien *alien = new BasicAlien(basicAlienImage, 60, (rand()%250+100), 1, 0);
+        BasicAlien *alien = new BasicAlien(basicAlienImage, 60, (rand()%250+50), 1, 1);
         game->addItem(alien);
         eBulletsandPlayer.push_back(alien);
         break;
       }
       case 1:
       {
-        BasicAlien *alien = new BasicAlien(basicAlienImage, 440, (rand()%250+100), -1, 0);
+        BasicAlien *alien = new BasicAlien(basicAlienImage, 440, (rand()%250+50), -1, 1);
         game->addItem(alien);
         eBulletsandPlayer.push_back(alien);
         break;
