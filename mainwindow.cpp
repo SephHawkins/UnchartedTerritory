@@ -114,9 +114,10 @@ void MainWindow::show()
  */
 void MainWindow::beginGame()
 {
-  if(gameInProgress)
+  if(gameInProgress == 1)
   {
-    return;
+    player->lives = -1;
+    playerHit();
   }
   if(gameOver != NULL)
   {
